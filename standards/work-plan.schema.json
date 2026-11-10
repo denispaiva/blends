@@ -1,0 +1,1257 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blends.local/schemas/work-plan/1.8.0",
+  "title": "Blends Multi-Agent Work Plan",
+  "description": "Plan dinámico y registro de ejecución para un objetivo multiagente.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "objectiveId",
+    "title",
+    "status",
+    "artifacts",
+    "commander",
+    "bindingOverrides",
+    "sprints",
+    "phases",
+    "versioning",
+    "finops",
+    "platform",
+    "tasks",
+    "workflow",
+    "sessionGraph",
+    "handoffs"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": "1.8.0"
+    },
+    "objectiveId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "$ref": "#/$defs/status"
+    },
+    "artifacts": {
+      "$ref": "#/$defs/artifacts"
+    },
+    "commander": {
+      "$ref": "#/$defs/executor"
+    },
+    "bindingOverrides": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/bindingOverride"
+      }
+    },
+    "sprints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/sprint"
+      }
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/phase"
+      }
+    },
+    "versioning": {
+      "$ref": "#/$defs/versioning"
+    },
+    "finops": {
+      "$ref": "#/$defs/finops"
+    },
+    "platform": {
+      "$ref": "#/$defs/platform"
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/task"
+      }
+    },
+    "workflow": {
+      "$ref": "#/$defs/workflow"
+    },
+    "sessionGraph": {
+      "$ref": "#/$defs/sessionGraph"
+    },
+    "handoffs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/handoff"
+      }
+    },
+    "metrics": {
+      "$ref": "#/$defs/metrics"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "artifacts": {
+      "type": "object",
+      "required": ["prd", "architecture", "review"],
+      "properties": {
+        "prd": { "type": "string" },
+        "architecture": { "type": "string" },
+        "review": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "sprint": {
+      "type": "object",
+      "required": [
+        "id",
+        "goal",
+        "startDate",
+        "endDate",
+        "status",
+        "taskRefs",
+        "review",
+        "retrospective"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/sprintId" },
+        "goal": { "type": "string", "minLength": 1 },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "status": { "enum": ["planned", "active", "completed", "cancelled"] },
+        "taskRefs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "review": { "$ref": "#/$defs/sprintCeremony" },
+        "retrospective": { "$ref": "#/$defs/sprintCeremony" }
+      },
+      "additionalProperties": false
+    },
+    "sprintCeremony": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["pending", "completed"] },
+        "summary": { "type": "string" },
+        "evidence": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "sprintId": {
+      "type": "string",
+      "pattern": "^SP-[0-9]{4}-W(0[1-9]|[1-4][0-9]|5[0-3])$"
+    },
+    "phase": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "objective",
+        "status",
+        "dependsOn",
+        "taskRefs",
+        "deliverables",
+        "exitCriteria",
+        "targetVersion",
+        "budget"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "objective": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "dependsOn": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "taskRefs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "deliverables": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/deliverable" }
+        },
+        "exitCriteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "targetVersion": {
+          "$ref": "#/$defs/semanticVersion"
+        },
+        "budget": {
+          "$ref": "#/$defs/phaseBudget"
+        }
+      },
+      "additionalProperties": false
+    },
+    "deliverable": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "description",
+        "ownerRole",
+        "status",
+        "acceptance",
+        "performance",
+        "authority"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ownerRole": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "planned",
+            "in_progress",
+            "review",
+            "accepted",
+            "rejected",
+            "blocked"
+          ]
+        },
+        "acceptance": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/acceptanceMeasure" }
+        },
+        "performance": {
+          "$ref": "#/$defs/deliverablePerformance"
+        },
+        "authority": {
+          "$ref": "#/$defs/deliverableAuthority"
+        }
+      },
+      "additionalProperties": false
+    },
+    "acceptanceMeasure": {
+      "type": "object",
+      "required": ["metric", "operator", "target", "evidence"],
+      "properties": {
+        "metric": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "operator": {
+          "enum": ["eq", "neq", "gte", "lte", "contains", "exists", "passes"]
+        },
+        "target": {
+          "type": ["string", "number", "boolean"]
+        },
+        "actual": {
+          "type": ["string", "number", "boolean", "null"]
+        },
+        "unit": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "deliverablePerformance": {
+      "type": "object",
+      "required": [
+        "complexity",
+        "measurementStatus",
+        "actuals",
+        "scores",
+        "measuredAt",
+        "evidence"
+      ],
+      "properties": {
+        "complexity": { "enum": ["XS", "S", "M", "L", "XL"] },
+        "measurementStatus": { "enum": ["pending", "measured"] },
+        "actuals": {
+          "oneOf": [
+            { "$ref": "#/$defs/deliverableActuals" },
+            { "type": "null" }
+          ]
+        },
+        "scores": {
+          "oneOf": [{ "$ref": "#/$defs/deliverableScores" }, { "type": "null" }]
+        },
+        "measuredAt": { "type": ["string", "null"], "format": "date-time" },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "measurementWaiver": { "$ref": "#/$defs/deliverableMeasurementWaiver" }
+      },
+      "additionalProperties": false
+    },
+    "deliverableMeasurementWaiver": {
+      "type": "object",
+      "required": ["reason", "declaredAt"],
+      "properties": {
+        "reason": { "type": "string", "minLength": 1 },
+        "declaredAt": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "deliverableActuals": {
+      "type": "object",
+      "required": ["inputTokens", "outputTokens"],
+      "properties": {
+        "inputTokens": { "type": "integer", "minimum": 0 },
+        "outputTokens": { "type": "integer", "minimum": 0 },
+        "correctiveReworkTokens": { "type": "integer", "minimum": 0 },
+        "plannedRefactoringTokens": { "type": "integer", "minimum": 0 },
+        "defects": {
+          "type": "object",
+          "required": ["P0", "P1", "P2", "escaped"],
+          "properties": {
+            "P0": { "type": "integer", "minimum": 0 },
+            "P1": { "type": "integer", "minimum": 0 },
+            "P2": { "type": "integer", "minimum": 0 },
+            "escaped": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "deliverableScores": {
+      "type": "object",
+      "required": [
+        "tokenEfficiencyPercent",
+        "qualityPercent",
+        "reworkEfficiencyPercent",
+        "deliveryEfficiencyPercent",
+        "qualityGatePassed",
+        "status"
+      ],
+      "properties": {
+        "tokenEfficiencyPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "qualityPercent": {
+          "oneOf": [
+            { "type": "number", "minimum": 0, "maximum": 100 },
+            { "type": "null" }
+          ]
+        },
+        "reworkEfficiencyPercent": {
+          "oneOf": [
+            { "type": "number", "minimum": 0, "maximum": 100 },
+            { "type": "null" }
+          ]
+        },
+        "deliveryEfficiencyPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "qualityGatePassed": {
+          "oneOf": [{ "type": "boolean" }, { "type": "null" }]
+        },
+        "status": { "enum": ["excellent", "healthy", "attention", "blocked"] }
+      },
+      "additionalProperties": false
+    },
+    "deliverableAuthority": {
+      "type": "object",
+      "required": [
+        "surface",
+        "tags",
+        "responsibleRoles",
+        "accountableRole",
+        "consultedRoles",
+        "informedRoles",
+        "approval"
+      ],
+      "properties": {
+        "surface": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$"
+        },
+        "tags": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+        },
+        "responsibleRoles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "accountableRole": { "type": "string" },
+        "consultedRoles": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "informedRoles": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "approval": { "$ref": "#/$defs/deliverableApproval" }
+      },
+      "additionalProperties": false
+    },
+    "deliverableApproval": {
+      "type": "object",
+      "required": [
+        "status",
+        "role",
+        "agent",
+        "action",
+        "approvedAt",
+        "evidence"
+      ],
+      "properties": {
+        "status": { "enum": ["pending", "approved", "rejected"] },
+        "role": { "type": ["string", "null"] },
+        "agent": { "type": ["string", "null"] },
+        "action": {
+          "type": ["string", "null"],
+          "enum": ["decides", "reviews", "audits", null]
+        },
+        "approvedAt": { "type": ["string", "null"], "format": "date-time" },
+        "evidence": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "versioning": {
+      "type": "object",
+      "required": [
+        "scheme",
+        "currentVersion",
+        "targetVersion",
+        "bump",
+        "channel",
+        "rationale",
+        "releaseCriteria",
+        "changelogPath",
+        "tagPattern",
+        "compatibility",
+        "rollbackPlan"
+      ],
+      "properties": {
+        "scheme": { "const": "semver" },
+        "currentVersion": { "$ref": "#/$defs/semanticVersion" },
+        "targetVersion": { "$ref": "#/$defs/semanticVersion" },
+        "bump": { "enum": ["major", "minor", "patch"] },
+        "channel": { "enum": ["alpha", "beta", "rc", "stable"] },
+        "rationale": { "type": "string", "minLength": 1 },
+        "releaseCriteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "changelogPath": { "type": "string", "minLength": 1 },
+        "tagPattern": { "type": "string", "pattern": "\\{version\\}" },
+        "compatibility": {
+          "type": "object",
+          "required": [
+            "backwardCompatible",
+            "migrationRequired",
+            "migrationPlan"
+          ],
+          "properties": {
+            "backwardCompatible": { "type": "boolean" },
+            "migrationRequired": { "type": "boolean" },
+            "migrationPlan": { "type": ["string", "null"] }
+          },
+          "additionalProperties": false
+        },
+        "rollbackPlan": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "semanticVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "phaseBudget": {
+      "type": "object",
+      "required": ["maxCostUsd", "forecastCostUsd"],
+      "properties": {
+        "maxCostUsd": { "type": "number", "exclusiveMinimum": 0 },
+        "forecastCostUsd": { "type": "number", "minimum": 0 },
+        "actualCostUsd": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "finops": {
+      "type": "object",
+      "required": [
+        "currency",
+        "budgetLimitUsd",
+        "forecastCostUsd",
+        "contingencyPercent",
+        "costPools",
+        "allocation",
+        "unitEconomics",
+        "thresholds",
+        "actuals",
+        "controls",
+        "billingLedgerRef",
+        "billingAllocationIds"
+      ],
+      "properties": {
+        "currency": { "const": "USD" },
+        "budgetLimitUsd": { "type": "number", "exclusiveMinimum": 0 },
+        "forecastCostUsd": { "type": "number", "minimum": 0 },
+        "contingencyPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "costPools": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/costPool" }
+        },
+        "allocation": {
+          "type": "object",
+          "required": [
+            "project",
+            "environment",
+            "owner",
+            "costCenter",
+            "version"
+          ],
+          "properties": {
+            "project": { "type": "string", "minLength": 1 },
+            "environment": { "type": "string", "minLength": 1 },
+            "owner": { "type": "string", "minLength": 1 },
+            "costCenter": { "type": "string", "minLength": 1 },
+            "version": { "$ref": "#/$defs/semanticVersion" }
+          },
+          "additionalProperties": false
+        },
+        "unitEconomics": {
+          "type": "object",
+          "required": ["metric", "unit", "targetMaxCostUsd", "expectedVolume"],
+          "properties": {
+            "metric": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+            "unit": { "type": "string", "minLength": 1 },
+            "targetMaxCostUsd": { "type": "number", "exclusiveMinimum": 0 },
+            "expectedVolume": { "type": "number", "exclusiveMinimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "thresholds": {
+          "type": "object",
+          "required": [
+            "informationalPercent",
+            "warningPercent",
+            "criticalPercent",
+            "anomalyPercent"
+          ],
+          "properties": {
+            "informationalPercent": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "warningPercent": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "criticalPercent": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "anomalyPercent": { "type": "number", "minimum": 1, "maximum": 100 }
+          },
+          "additionalProperties": false
+        },
+        "actuals": {
+          "type": "object",
+          "required": [
+            "costToDateUsd",
+            "forecastAtCompletionUsd",
+            "measuredAt",
+            "source"
+          ],
+          "properties": {
+            "costToDateUsd": { "type": "number", "minimum": 0 },
+            "forecastAtCompletionUsd": { "type": "number", "minimum": 0 },
+            "measuredAt": { "type": "string", "format": "date-time" },
+            "source": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+        "controls": {
+          "type": "object",
+          "required": [
+            "blockUnallocatedSpend",
+            "blockReleaseOverBudget",
+            "requireHumanApprovalForOverage",
+            "requireCostEvidenceAtPhaseExit"
+          ],
+          "properties": {
+            "blockUnallocatedSpend": { "const": true },
+            "blockReleaseOverBudget": { "const": true },
+            "requireHumanApprovalForOverage": { "const": true },
+            "requireCostEvidenceAtPhaseExit": { "const": true }
+          },
+          "additionalProperties": false
+        },
+        "billingLedgerRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "billingAllocationIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "costPool": {
+      "type": "object",
+      "required": ["id", "budgetUsd", "forecastUsd", "actualUsd"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "budgetUsd": { "type": "number", "minimum": 0 },
+        "forecastUsd": { "type": "number", "minimum": 0 },
+        "actualUsd": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "platform": {
+      "type": "object",
+      "required": ["cloud", "mobile"],
+      "properties": {
+        "cloud": { "$ref": "#/$defs/cloudPlatform" },
+        "mobile": { "$ref": "#/$defs/mobilePlatform" }
+      },
+      "additionalProperties": false
+    },
+    "cloudPlatform": {
+      "type": "object",
+      "required": [
+        "impact",
+        "provider",
+        "strategy",
+        "managedServicesEvaluated",
+        "serverlessEvaluated",
+        "regions",
+        "dataResidency",
+        "exitStrategy",
+        "portabilityRisks",
+        "costEstimateEvidence",
+        "idleResourcePolicy",
+        "decisionRecord"
+      ],
+      "properties": {
+        "impact": { "enum": ["none", "indirect", "direct"] },
+        "provider": { "type": "string", "minLength": 1 },
+        "strategy": {
+          "enum": [
+            "managed",
+            "serverless",
+            "containerized",
+            "iaas",
+            "not-applicable"
+          ]
+        },
+        "managedServicesEvaluated": { "type": "boolean" },
+        "serverlessEvaluated": { "type": "boolean" },
+        "regions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "dataResidency": { "type": "string", "minLength": 1 },
+        "exitStrategy": { "type": "string", "minLength": 1 },
+        "portabilityRisks": { "type": "array", "items": { "type": "string" } },
+        "costEstimateEvidence": { "type": "string", "minLength": 1 },
+        "idleResourcePolicy": { "type": "string", "minLength": 1 },
+        "decisionRecord": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "mobilePlatform": {
+      "type": "object",
+      "required": [
+        "impact",
+        "baselineViewportWidthCssPx",
+        "touchTargets",
+        "adaptiveLayouts",
+        "offlineBehavior",
+        "slowNetworkProfile",
+        "orientationSupport",
+        "acceptanceEvidence",
+        "decisionRecord"
+      ],
+      "properties": {
+        "impact": { "enum": ["none", "indirect", "direct"] },
+        "baselineViewportWidthCssPx": { "type": "integer", "minimum": 240 },
+        "touchTargets": {
+          "type": "object",
+          "required": ["webCssPx", "iosPoints", "androidDp"],
+          "properties": {
+            "webCssPx": { "type": "integer", "minimum": 1 },
+            "iosPoints": { "type": "integer", "minimum": 1 },
+            "androidDp": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "adaptiveLayouts": { "type": "boolean" },
+        "offlineBehavior": { "type": "string", "minLength": 1 },
+        "slowNetworkProfile": { "type": "string", "minLength": 1 },
+        "orientationSupport": { "type": "boolean" },
+        "acceptanceEvidence": { "type": "string", "minLength": 1 },
+        "decisionRecord": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "task": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "sprintId",
+        "phaseId",
+        "deliverableRefs",
+        "costPool",
+        "surface",
+        "role",
+        "bindingRef",
+        "risk",
+        "plan",
+        "status",
+        "dependsOn",
+        "readScope",
+        "writeScope",
+        "deliverable",
+        "acceptance",
+        "gates",
+        "workflowNode",
+        "budget"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sprintId": {
+          "$ref": "#/$defs/sprintId"
+        },
+        "phaseId": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "deliverableRefs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "costPool": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "surface": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$"
+        },
+        "role": {
+          "type": "string"
+        },
+        "bindingRef": {
+          "type": "string"
+        },
+        "risk": {
+          "enum": ["P0", "P1", "P2"]
+        },
+        "plan": {
+          "$ref": "#/$defs/taskPlan"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "dependsOn": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "readScope": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "writeScope": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "deliverable": {
+          "type": "string",
+          "minLength": 1
+        },
+        "acceptance": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "gates": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "parallelGroup": {
+          "type": "string"
+        },
+        "workflowNode": {
+          "type": "string"
+        },
+        "budget": {
+          "$ref": "#/$defs/budget"
+        },
+        "execution": {
+          "$ref": "#/$defs/execution"
+        },
+        "toolingRefs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "taskPlan": {
+      "type": "object",
+      "required": ["skillSource", "skill", "status", "plannedBy", "evidence"],
+      "properties": {
+        "skillSource": { "const": "obra/superpowers" },
+        "skill": { "const": "writing-plans" },
+        "status": { "enum": ["planned", "approved"] },
+        "plannedBy": { "enum": ["claude", "codex"] },
+        "evidence": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "executor": {
+      "type": "object",
+      "required": [
+        "agent",
+        "provider",
+        "model",
+        "modelFamily",
+        "modelClass",
+        "tier",
+        "isolation"
+      ],
+      "properties": {
+        "agent": { "type": "string" },
+        "provider": { "type": "string" },
+        "model": { "type": "string" },
+        "modelFamily": { "type": "string" },
+        "modelClass": { "enum": ["frontier", "balanced", "economy", "human"] },
+        "tier": { "enum": ["primary", "subagent", "human"] },
+        "isolation": {
+          "enum": ["normal", "fresh-session", "worktree", "fresh-worktree"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "bindingOverride": {
+      "type": "object",
+      "required": [
+        "role",
+        "agent",
+        "provider",
+        "model",
+        "modelFamily",
+        "modelClass",
+        "tier",
+        "isolation"
+      ],
+      "properties": {
+        "role": { "type": "string" },
+        "agent": { "type": "string" },
+        "provider": { "type": "string" },
+        "model": { "type": "string" },
+        "modelFamily": { "type": "string" },
+        "modelClass": { "enum": ["frontier", "balanced", "economy"] },
+        "tier": { "enum": ["primary", "subagent"] },
+        "isolation": {
+          "enum": ["normal", "fresh-session", "worktree", "fresh-worktree"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "workflow": {
+      "type": "object",
+      "required": ["startNode", "nodes", "edges", "limits"],
+      "properties": {
+        "startNode": { "type": "string" },
+        "nodes": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/workflowNode"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/workflowEdge"
+          }
+        },
+        "limits": {
+          "type": "object",
+          "required": ["maxCycles", "maxTransitions"],
+          "properties": {
+            "maxCycles": { "type": "integer", "minimum": 1 },
+            "maxTransitions": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "workflowNode": {
+      "type": "object",
+      "required": ["kind", "taskRefs", "outcomes"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "research",
+            "plan",
+            "implement",
+            "review",
+            "fix",
+            "human_gate",
+            "terminal"
+          ]
+        },
+        "taskRefs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "outcomes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "workflowEdge": {
+      "type": "object",
+      "required": ["from", "to", "condition"],
+      "properties": {
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "condition": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sessionGraph": {
+      "type": "object",
+      "required": ["latestSessionId", "nodes", "edges"],
+      "properties": {
+        "latestSessionId": { "type": "string", "minLength": 1 },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/sessionNode" }
+        },
+        "edges": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sessionEdge" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "sessionNode": {
+      "type": "object",
+      "required": [
+        "id",
+        "sprintId",
+        "agent",
+        "role",
+        "status",
+        "taskRefs",
+        "startedAt"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "sprintId": { "$ref": "#/$defs/sprintId" },
+        "agent": { "type": "string", "minLength": 1 },
+        "role": { "type": "string", "minLength": 1 },
+        "status": {
+          "enum": ["planned", "active", "completed", "blocked", "failed"]
+        },
+        "taskRefs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "endedAt": { "type": ["string", "null"], "format": "date-time" },
+        "summary": { "type": "string" },
+        "achievements": { "type": "array", "items": { "type": "string" } },
+        "evidence": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "sessionEdge": {
+      "type": "object",
+      "required": ["fromSession", "toSession", "handoffRef"],
+      "properties": {
+        "fromSession": { "type": "string" },
+        "toSession": { "type": "string" },
+        "handoffRef": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "handoff": {
+      "type": "object",
+      "required": [
+        "id",
+        "sprintId",
+        "fromSession",
+        "toSession",
+        "fromTask",
+        "toTask",
+        "status",
+        "summary",
+        "achievements",
+        "outputs",
+        "facts",
+        "decisions",
+        "risks",
+        "nextActions",
+        "requiredInputs",
+        "evidence"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "sprintId": { "$ref": "#/$defs/sprintId" },
+        "fromSession": { "type": "string" },
+        "toSession": { "type": "string" },
+        "fromTask": { "type": "string" },
+        "toTask": { "type": ["string", "null"] },
+        "status": { "enum": ["completed", "blocked", "failed"] },
+        "summary": { "type": "string", "minLength": 1 },
+        "achievements": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "outputs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "facts": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["summary", "authorityRole"],
+            "properties": {
+              "summary": { "type": "string" },
+              "authorityRole": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "risks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["summary", "severity"],
+            "properties": {
+              "summary": { "type": "string" },
+              "severity": { "enum": ["P0", "P1", "P2"] }
+            },
+            "additionalProperties": false
+          }
+        },
+        "requiredInputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "nextActions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "carryover": { "type": "boolean" },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "agent",
+        "provider",
+        "model",
+        "modelFamily",
+        "modelClass",
+        "tier",
+        "isolation"
+      ],
+      "properties": {
+        "agent": { "type": "string" },
+        "provider": { "type": "string" },
+        "model": { "type": "string" },
+        "modelFamily": { "type": "string" },
+        "modelClass": { "enum": ["frontier", "balanced", "economy", "human"] },
+        "tier": { "enum": ["primary", "subagent", "human"] },
+        "isolation": {
+          "enum": ["normal", "fresh-session", "worktree", "fresh-worktree"]
+        },
+        "startedAt": { "type": ["string", "null"], "format": "date-time" },
+        "finishedAt": { "type": ["string", "null"], "format": "date-time" },
+        "inputTokens": { "type": "integer", "minimum": 0 },
+        "outputTokens": { "type": "integer", "minimum": 0 },
+        "estimatedCostUsd": { "type": "number", "minimum": 0 },
+        "fallbackUsed": { "type": "boolean" },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "subagents": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/executor" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "maxTokens": { "type": "integer", "minimum": 1 },
+        "maxCostUsd": { "type": "number", "exclusiveMinimum": 0 },
+        "maxMinutes": { "type": "integer", "minimum": 1 },
+        "maxAttempts": { "type": "integer", "minimum": 1 }
+      },
+      "minProperties": 1,
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "totalInputTokens": { "type": "integer", "minimum": 0 },
+        "totalOutputTokens": { "type": "integer", "minimum": 0 },
+        "estimatedCostUsd": { "type": "number", "minimum": 0 },
+        "cycleMinutes": { "type": "integer", "minimum": 0 },
+        "acceptedFirstPass": { "type": "integer", "minimum": 0 },
+        "reworkCount": { "type": "integer", "minimum": 0 },
+        "fallbackUses": { "type": "integer", "minimum": 0 },
+        "parallelTasks": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "ready",
+        "in_progress",
+        "blocked",
+        "review",
+        "done",
+        "failed",
+        "cancelled"
+      ]
+    }
+  }
+}

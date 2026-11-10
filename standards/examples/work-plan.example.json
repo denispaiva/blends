@@ -1,0 +1,840 @@
+{
+  "$schema": "../work-plan.schema.json",
+  "schemaVersion": "1.8.0",
+  "objectiveId": "add-roadmap-filter",
+  "title": "Agregar un filtro combinado al roadmap",
+  "status": "in_progress",
+  "artifacts": {
+    "prd": "docs/product/add-roadmap-filter-prd.md",
+    "architecture": "docs/architecture/add-roadmap-filter.md",
+    "review": "docs/execution/filter-audit.md"
+  },
+  "commander": {
+    "agent": "codex",
+    "provider": "openai",
+    "model": "openai-frontier-model",
+    "modelFamily": "openai-reasoning",
+    "modelClass": "frontier",
+    "tier": "primary",
+    "isolation": "worktree"
+  },
+  "bindingOverrides": {
+    "senior-developer.economy-override": {
+      "role": "senior-developer",
+      "agent": "claude",
+      "provider": "anthropic",
+      "model": "anthropic-economy-model",
+      "modelFamily": "anthropic-claude",
+      "modelClass": "economy",
+      "tier": "subagent",
+      "isolation": "fresh-session"
+    }
+  },
+  "sprints": [
+    {
+      "id": "SP-2026-W32",
+      "goal": "Diseñar, implementar y auditar el filtro combinado con evidencia reproducible.",
+      "startDate": "2026-08-03",
+      "endDate": "2026-08-16",
+      "status": "active",
+      "taskRefs": [
+        "inventory-filter-surfaces",
+        "define-filter-contract",
+        "audit-filter-contract",
+        "implement-filter-engine",
+        "implement-filter-interface",
+        "audit-filter-change"
+      ],
+      "review": { "status": "pending" },
+      "retrospective": { "status": "pending" }
+    }
+  ],
+  "phases": [
+    {
+      "id": "phase-research",
+      "title": "Investigación de superficies",
+      "objective": "Confirmar el alcance real y las restricciones antes de diseñar.",
+      "status": "done",
+      "dependsOn": [],
+      "taskRefs": ["inventory-filter-surfaces"],
+      "deliverables": [
+        {
+          "id": "filter-surface-inventory",
+          "title": "Inventario de superficies",
+          "description": "Mapa verificable de módulos, pruebas, estados y límites de escritura.",
+          "ownerRole": "researcher",
+          "status": "accepted",
+          "acceptance": [
+            {
+              "metric": "documented_surface_count",
+              "operator": "gte",
+              "target": 2,
+              "actual": 3,
+              "unit": "surfaces",
+              "evidence": "docs/execution/filter-inventory.md"
+            }
+          ],
+          "performance": {
+            "complexity": "XS",
+            "measurementStatus": "measured",
+            "actuals": {
+              "inputTokens": 4200,
+              "outputTokens": 1100,
+              "correctiveReworkTokens": 300,
+              "plannedRefactoringTokens": 400,
+              "defects": { "P0": 0, "P1": 0, "P2": 1, "escaped": 0 }
+            },
+            "scores": {
+              "tokenEfficiencyPercent": 100,
+              "qualityPercent": 95,
+              "reworkEfficiencyPercent": 94.34,
+              "deliveryEfficiencyPercent": 96.84,
+              "qualityGatePassed": true,
+              "status": "excellent"
+            },
+            "measuredAt": "2026-08-03T13:09:00Z",
+            "evidence": ["docs/execution/filter-inventory.md"]
+          },
+          "authority": {
+            "surface": "governance.research",
+            "tags": ["research"],
+            "responsibleRoles": ["researcher"],
+            "accountableRole": "researcher",
+            "consultedRoles": ["architect", "code-reviewer"],
+            "informedRoles": ["product-owner"],
+            "approval": {
+              "status": "approved",
+              "role": "architect",
+              "agent": "codex",
+              "action": "reviews",
+              "approvedAt": "2026-08-03T13:09:00Z",
+              "evidence": "docs/execution/filter-inventory.md"
+            }
+          }
+        }
+      ],
+      "exitCriteria": [
+        "Todas las rutas citadas existen y el alcance de escritura está delimitado."
+      ],
+      "targetVersion": "0.2.0-alpha.1",
+      "budget": {
+        "maxCostUsd": 2,
+        "forecastCostUsd": 1,
+        "actualCostUsd": 1
+      }
+    },
+    {
+      "id": "phase-design",
+      "title": "Contrato y validación",
+      "objective": "Definir y auditar el comportamiento antes de modificar código.",
+      "status": "in_progress",
+      "dependsOn": ["phase-research"],
+      "taskRefs": ["define-filter-contract", "audit-filter-contract"],
+      "deliverables": [
+        {
+          "id": "validated-filter-contract",
+          "title": "Contrato de filtro validado",
+          "description": "Contrato de entradas, salidas, compatibilidad y estados inválidos con auditoría independiente.",
+          "ownerRole": "architect",
+          "status": "review",
+          "acceptance": [
+            {
+              "metric": "independent_audit_result",
+              "operator": "passes",
+              "target": true,
+              "evidence": "docs/execution/filter-contract-audit.md"
+            }
+          ],
+          "performance": {
+            "complexity": "S",
+            "measurementStatus": "pending",
+            "actuals": null,
+            "scores": null,
+            "measuredAt": null,
+            "evidence": []
+          },
+          "authority": {
+            "surface": "business.filtering",
+            "tags": ["business-rule"],
+            "responsibleRoles": ["senior-developer"],
+            "accountableRole": "architect",
+            "consultedRoles": ["researcher"],
+            "informedRoles": ["product-owner"],
+            "approval": { "status": "pending", "role": null, "agent": null, "action": null, "approvedAt": null, "evidence": null }
+          }
+        }
+      ],
+      "exitCriteria": [
+        "La auditoría independiente acepta el contrato sin hallazgos bloqueantes."
+      ],
+      "targetVersion": "0.2.0-alpha.1",
+      "budget": {
+        "maxCostUsd": 5,
+        "forecastCostUsd": 4
+      }
+    },
+    {
+      "id": "phase-delivery",
+      "title": "Implementación paralela",
+      "objective": "Construir motor e interfaz en superficies de escritura independientes.",
+      "status": "queued",
+      "dependsOn": ["phase-design"],
+      "taskRefs": ["implement-filter-engine", "implement-filter-interface"],
+      "deliverables": [
+        {
+          "id": "filter-engine",
+          "title": "Motor de filtro",
+          "description": "Motor combinable con cobertura de estados vacíos e inválidos.",
+          "ownerRole": "senior-developer",
+          "status": "planned",
+          "acceptance": [
+            {
+              "metric": "unit_test_result",
+              "operator": "passes",
+              "target": true,
+              "evidence": "project-test-command"
+            }
+          ],
+          "performance": {
+            "complexity": "M",
+            "measurementStatus": "pending",
+            "actuals": null,
+            "scores": null,
+            "measuredAt": null,
+            "evidence": []
+          },
+          "authority": {
+            "surface": "business.filtering",
+            "tags": ["business-rule"],
+            "responsibleRoles": ["senior-developer"],
+            "accountableRole": "architect",
+            "consultedRoles": ["researcher"],
+            "informedRoles": ["product-owner"],
+            "approval": { "status": "pending", "role": null, "agent": null, "action": null, "approvedAt": null, "evidence": null }
+          }
+        },
+        {
+          "id": "filter-interface",
+          "title": "Interfaz accesible",
+          "description": "Control visible en español y operable con teclado y touch.",
+          "ownerRole": "senior-developer",
+          "status": "planned",
+          "acceptance": [
+            {
+              "metric": "accessible_interaction_modes",
+              "operator": "gte",
+              "target": 2,
+              "unit": "modes",
+              "evidence": "docs/execution/filter-audit.md"
+            }
+          ],
+          "performance": {
+            "complexity": "S",
+            "measurementStatus": "pending",
+            "actuals": null,
+            "scores": null,
+            "measuredAt": null,
+            "evidence": []
+          },
+          "authority": {
+            "surface": "presentation.ui",
+            "tags": ["ui", "mobile"],
+            "responsibleRoles": ["senior-developer"],
+            "accountableRole": "senior-developer",
+            "consultedRoles": ["product-owner", "code-reviewer", "researcher"],
+            "informedRoles": ["architect"],
+            "approval": { "status": "pending", "role": null, "agent": null, "action": null, "approvedAt": null, "evidence": null }
+          }
+        }
+      ],
+      "exitCriteria": [
+        "Motor e interfaz pasan sus gates sin superposición de write scopes."
+      ],
+      "targetVersion": "0.2.0-alpha.1",
+      "budget": {
+        "maxCostUsd": 13,
+        "forecastCostUsd": 10
+      }
+    },
+    {
+      "id": "phase-release",
+      "title": "Auditoría y release",
+      "objective": "Probar el cambio integrado y decidir si puede etiquetarse.",
+      "status": "queued",
+      "dependsOn": ["phase-delivery"],
+      "taskRefs": ["audit-filter-change"],
+      "deliverables": [
+        {
+          "id": "accepted-release-candidate",
+          "title": "Release candidate aceptado",
+          "description": "Versión objetivo con build, pruebas y auditoría reproducibles.",
+          "ownerRole": "code-reviewer",
+          "status": "planned",
+          "acceptance": [
+            {
+              "metric": "blocking_gate_failures",
+              "operator": "eq",
+              "target": 0,
+              "unit": "failures",
+              "evidence": "docs/execution/filter-audit.md"
+            }
+          ],
+          "performance": {
+            "complexity": "S",
+            "measurementStatus": "pending",
+            "actuals": null,
+            "scores": null,
+            "measuredAt": null,
+            "evidence": []
+          },
+          "authority": {
+            "surface": "business.filtering",
+            "tags": ["business-rule", "release"],
+            "responsibleRoles": ["senior-developer"],
+            "accountableRole": "architect",
+            "consultedRoles": ["researcher"],
+            "informedRoles": ["product-owner"],
+            "approval": { "status": "pending", "role": null, "agent": null, "action": null, "approvedAt": null, "evidence": null }
+          }
+        }
+      ],
+      "exitCriteria": [
+        "Todos los release criteria están cumplidos y existe plan de rollback."
+      ],
+      "targetVersion": "0.2.0-alpha.1",
+      "budget": {
+        "maxCostUsd": 10,
+        "forecastCostUsd": 7
+      }
+    }
+  ],
+  "versioning": {
+    "scheme": "semver",
+    "currentVersion": "0.1.0",
+    "targetVersion": "0.2.0-alpha.1",
+    "bump": "minor",
+    "channel": "alpha",
+    "rationale": "El objetivo agrega una capacidad compatible que todavía requiere validación de uso.",
+    "releaseCriteria": [
+      "Todas las fases están done.",
+      "No existen fallos en gates bloqueantes.",
+      "El changelog describe alcance, compatibilidad y rollback."
+    ],
+    "changelogPath": "CHANGELOG.md",
+    "tagPattern": "v{version}",
+    "compatibility": {
+      "backwardCompatible": true,
+      "migrationRequired": false,
+      "migrationPlan": null
+    },
+    "rollbackPlan": "Revertir el commit de integración y restaurar la interfaz anterior del filtro."
+  },
+  "finops": {
+    "currency": "USD",
+    "budgetLimitUsd": 30,
+    "forecastCostUsd": 22,
+    "contingencyPercent": 20,
+    "costPools": [
+      {
+        "id": "agents",
+        "budgetUsd": 14,
+        "forecastUsd": 12,
+        "actualUsd": 1
+      },
+      {
+        "id": "cloud",
+        "budgetUsd": 10,
+        "forecastUsd": 7,
+        "actualUsd": 0
+      },
+      {
+        "id": "tooling",
+        "budgetUsd": 4,
+        "forecastUsd": 2,
+        "actualUsd": 0
+      },
+      {
+        "id": "external",
+        "budgetUsd": 2,
+        "forecastUsd": 1,
+        "actualUsd": 0
+      }
+    ],
+    "allocation": {
+      "project": "example-project",
+      "environment": "development",
+      "owner": "project-owner",
+      "costCenter": "blends-vc",
+      "version": "0.2.0-alpha.1"
+    },
+    "unitEconomics": {
+      "metric": "cost_per_active_filter_session",
+      "unit": "active-filter-session",
+      "targetMaxCostUsd": 0.03,
+      "expectedVolume": 1000
+    },
+    "thresholds": {
+      "informationalPercent": 50,
+      "warningPercent": 80,
+      "criticalPercent": 100,
+      "anomalyPercent": 20
+    },
+    "actuals": {
+      "costToDateUsd": 1,
+      "forecastAtCompletionUsd": 22,
+      "measuredAt": "2026-08-03T13:08:00Z",
+      "source": "provider-billing-export"
+    },
+    "controls": {
+      "blockUnallocatedSpend": true,
+      "blockReleaseOverBudget": true,
+      "requireHumanApprovalForOverage": true,
+      "requireCostEvidenceAtPhaseExit": true
+    },
+    "billingLedgerRef": "../../../finops/billing-ledger.json",
+    "billingAllocationIds": [
+      "alloc-claude-shared",
+      "alloc-codex-shared"
+    ]
+  },
+  "platform": {
+    "cloud": {
+      "impact": "direct",
+      "provider": "provider-to-select",
+      "strategy": "managed",
+      "managedServicesEvaluated": true,
+      "serverlessEvaluated": true,
+      "regions": ["primary-region"],
+      "dataResidency": "La región se decide en arquitectura según usuarios y restricciones de datos.",
+      "exitStrategy": "Datos exportables, infraestructura reproducible y contratos de negocio fuera del SDK del proveedor.",
+      "portabilityRisks": ["Servicios administrados específicos del proveedor."],
+      "costEstimateEvidence": "docs/architecture/add-roadmap-filter.md",
+      "idleResourcePolicy": "Los recursos no productivos expiran o se apagan cuando no tienen uso.",
+      "decisionRecord": "docs/architecture/add-roadmap-filter.md"
+    },
+    "mobile": {
+      "impact": "direct",
+      "baselineViewportWidthCssPx": 320,
+      "touchTargets": {
+        "webCssPx": 24,
+        "iosPoints": 44,
+        "androidDp": 48
+      },
+      "adaptiveLayouts": true,
+      "offlineBehavior": "La interfaz conserva el último estado legible y explica qué acciones requieren conexión.",
+      "slowNetworkProfile": "slow-4g",
+      "orientationSupport": true,
+      "acceptanceEvidence": "docs/execution/filter-audit.md",
+      "decisionRecord": "docs/architecture/add-roadmap-filter.md"
+    }
+  },
+  "tasks": [
+    {
+      "id": "define-filter-contract",
+      "title": "Definir el contrato del filtro",
+      "sprintId": "SP-2026-W32",
+      "phaseId": "phase-design",
+      "deliverableRefs": ["validated-filter-contract"],
+      "costPool": "agents",
+      "surface": "business.filtering",
+      "role": "architect",
+      "bindingRef": "architect.primary",
+      "risk": "P1",
+      "plan": { "skillSource": "obra/superpowers", "skill": "writing-plans", "status": "approved", "plannedBy": "codex", "evidence": "docs/plans/add-roadmap-filter.md" },
+      "status": "ready",
+      "dependsOn": ["inventory-filter-surfaces"],
+      "readScope": ["docs/**", "src/filters/**"],
+      "writeScope": ["docs/decisions/filter-contract.md"],
+      "deliverable": "Contrato de entradas, salidas y compatibilidad del filtro.",
+      "acceptance": [
+        "Los estados internos permanecen en inglés.",
+        "La presentación visible se define en español.",
+        "El contrato conserva compatibilidad con filtros existentes."
+      ],
+      "gates": ["independent-audit"],
+      "parallelGroup": "wave-2",
+      "workflowNode": "plan",
+      "budget": {
+        "maxTokens": 18000,
+        "maxCostUsd": 2,
+        "maxAttempts": 2
+      },
+      "execution": {
+        "agent": "codex",
+        "provider": "openai",
+        "model": "openai-frontier-model",
+        "modelFamily": "openai-reasoning",
+        "modelClass": "frontier",
+        "tier": "primary",
+        "isolation": "worktree",
+        "startedAt": null,
+        "finishedAt": null,
+        "fallbackUsed": false,
+        "evidence": []
+      }
+    },
+    {
+      "id": "inventory-filter-surfaces",
+      "title": "Inventariar las superficies afectadas",
+      "sprintId": "SP-2026-W32",
+      "phaseId": "phase-research",
+      "deliverableRefs": ["filter-surface-inventory"],
+      "costPool": "agents",
+      "surface": "governance.research",
+      "role": "researcher",
+      "bindingRef": "researcher.fallback",
+      "risk": "P2",
+      "plan": { "skillSource": "obra/superpowers", "skill": "writing-plans", "status": "approved", "plannedBy": "claude", "evidence": "docs/plans/add-roadmap-filter.md" },
+      "status": "done",
+      "dependsOn": [],
+      "readScope": ["src/**", "tests/**"],
+      "writeScope": ["docs/execution/filter-inventory.md"],
+      "deliverable": "Inventario de módulos, pruebas y estados afectados.",
+      "acceptance": [
+        "Cada ruta citada existe.",
+        "El inventario distingue lectura de escritura.",
+        "No se proponen cambios fuera del objetivo."
+      ],
+      "gates": [],
+      "parallelGroup": "wave-1",
+      "workflowNode": "research",
+      "budget": {
+        "maxTokens": 8000,
+        "maxCostUsd": 1,
+        "maxAttempts": 2
+      },
+      "execution": {
+        "agent": "claude",
+        "provider": "anthropic",
+        "model": "anthropic-economy-model",
+        "modelFamily": "anthropic-claude",
+        "modelClass": "economy",
+        "tier": "subagent",
+        "isolation": "fresh-session",
+        "startedAt": "2026-08-03T13:00:00Z",
+        "finishedAt": "2026-08-03T13:08:00Z",
+        "inputTokens": 4200,
+        "outputTokens": 1100,
+        "estimatedCostUsd": 0.08,
+        "fallbackUsed": true,
+        "evidence": ["docs/execution/filter-inventory.md"]
+      }
+    },
+    {
+      "id": "audit-filter-contract",
+      "title": "Auditar el contrato del filtro",
+      "sprintId": "SP-2026-W32",
+      "phaseId": "phase-design",
+      "deliverableRefs": ["validated-filter-contract"],
+      "costPool": "agents",
+      "surface": "business.filtering",
+      "role": "code-reviewer",
+      "bindingRef": "code-reviewer.fallback",
+      "risk": "P1",
+      "plan": { "skillSource": "obra/superpowers", "skill": "writing-plans", "status": "approved", "plannedBy": "claude", "evidence": "docs/plans/add-roadmap-filter.md" },
+      "status": "queued",
+      "dependsOn": ["define-filter-contract"],
+      "readScope": ["docs/decisions/filter-contract.md", "src/filters/**"],
+      "writeScope": ["docs/execution/filter-contract-audit.md"],
+      "deliverable": "Informe independiente sobre consistencia, compatibilidad y riesgos del contrato.",
+      "acceptance": [
+        "La auditoría usa una familia de modelo distinta de la utilizada por el arquitecto.",
+        "Se evalúan compatibilidad, estados inválidos y efectos no declarados.",
+        "Cada hallazgo incluye evidencia y severidad."
+      ],
+      "gates": ["unit-tests", "independent-audit"],
+      "parallelGroup": "wave-3",
+      "workflowNode": "plan-review",
+      "budget": {
+        "maxTokens": 16000,
+        "maxCostUsd": 2,
+        "maxAttempts": 2
+      },
+      "execution": {
+        "agent": "claude",
+        "provider": "anthropic",
+        "model": "anthropic-frontier-model",
+        "modelFamily": "anthropic-claude",
+        "modelClass": "frontier",
+        "tier": "primary",
+        "isolation": "fresh-worktree",
+        "startedAt": null,
+        "finishedAt": null,
+        "fallbackUsed": true,
+        "evidence": []
+      }
+    },
+    {
+      "id": "implement-filter-engine",
+      "title": "Implementar el motor del filtro",
+      "sprintId": "SP-2026-W32",
+      "phaseId": "phase-delivery",
+      "deliverableRefs": ["filter-engine"],
+      "costPool": "agents",
+      "surface": "business.filtering",
+      "role": "senior-developer",
+      "bindingRef": "senior-developer.primary",
+      "risk": "P1",
+      "plan": { "skillSource": "obra/superpowers", "skill": "writing-plans", "status": "approved", "plannedBy": "codex", "evidence": "docs/plans/add-roadmap-filter.md" },
+      "status": "queued",
+      "dependsOn": ["audit-filter-contract", "inventory-filter-surfaces"],
+      "readScope": ["docs/decisions/filter-contract.md", "docs/execution/filter-inventory.md", "src/**"],
+      "writeScope": ["src/filters/**", "tests/filters/**"],
+      "deliverable": "Motor de filtrado con pruebas automatizadas.",
+      "acceptance": [
+        "Los filtros pueden combinarse sin resultados inconsistentes.",
+        "Las pruebas cubren estados vacíos y combinaciones inválidas.",
+        "No se modifica la representación persistida."
+      ],
+      "gates": ["unit-tests", "build"],
+      "parallelGroup": "wave-4",
+      "workflowNode": "implement",
+      "budget": {
+        "maxTokens": 26000,
+        "maxCostUsd": 4,
+        "maxAttempts": 2
+      },
+      "execution": {
+        "agent": "claude",
+        "provider": "anthropic",
+        "model": "anthropic-balanced-model",
+        "modelFamily": "anthropic-claude",
+        "modelClass": "balanced",
+        "tier": "primary",
+        "isolation": "normal",
+        "startedAt": null,
+        "finishedAt": null,
+        "fallbackUsed": false,
+        "evidence": []
+      }
+    },
+    {
+      "id": "implement-filter-interface",
+      "title": "Implementar la interfaz del filtro",
+      "sprintId": "SP-2026-W32",
+      "phaseId": "phase-delivery",
+      "deliverableRefs": ["filter-interface"],
+      "costPool": "agents",
+      "surface": "presentation.ui",
+      "role": "senior-developer",
+      "bindingRef": "senior-developer.economy-override",
+      "risk": "P2",
+      "plan": { "skillSource": "obra/superpowers", "skill": "writing-plans", "status": "approved", "plannedBy": "claude", "evidence": "docs/plans/add-roadmap-filter.md" },
+      "status": "queued",
+      "dependsOn": ["audit-filter-contract", "inventory-filter-surfaces"],
+      "readScope": ["docs/decisions/filter-contract.md", "src/ui/**"],
+      "writeScope": ["src/ui/filters/**", "tests/ui/filters/**"],
+      "deliverable": "Interfaz accesible con textos visibles en español.",
+      "acceptance": [
+        "El control funciona con teclado y touch.",
+        "Los estados visibles están en español.",
+        "La selección puede restablecerse."
+      ],
+      "gates": ["build", "mobile-check"],
+      "parallelGroup": "wave-4",
+      "workflowNode": "implement",
+      "budget": {
+        "maxTokens": 14000,
+        "maxCostUsd": 3,
+        "maxAttempts": 2
+      },
+      "execution": {
+        "agent": "claude",
+        "provider": "anthropic",
+        "model": "anthropic-economy-model",
+        "modelFamily": "anthropic-claude",
+        "modelClass": "economy",
+        "tier": "subagent",
+        "isolation": "fresh-session",
+        "startedAt": null,
+        "finishedAt": null,
+        "fallbackUsed": false,
+        "evidence": []
+      }
+    },
+    {
+      "id": "audit-filter-change",
+      "title": "Auditar el cambio integrado",
+      "sprintId": "SP-2026-W32",
+      "phaseId": "phase-release",
+      "deliverableRefs": ["accepted-release-candidate"],
+      "costPool": "agents",
+      "surface": "business.filtering",
+      "role": "code-reviewer",
+      "bindingRef": "code-reviewer.primary",
+      "risk": "P1",
+      "plan": { "skillSource": "obra/superpowers", "skill": "writing-plans", "status": "approved", "plannedBy": "codex", "evidence": "docs/plans/add-roadmap-filter.md" },
+      "status": "queued",
+      "dependsOn": ["implement-filter-engine", "implement-filter-interface"],
+      "readScope": ["docs/**", "src/**", "tests/**"],
+      "writeScope": ["docs/execution/filter-audit.md"],
+      "deliverable": "Informe independiente con hallazgos y decisión de aceptación.",
+      "acceptance": [
+        "La auditoría usa una familia de modelo distinta de la utilizada por los desarrolladores.",
+        "Se intentan combinaciones adversariales.",
+        "Cada hallazgo incluye evidencia reproducible."
+      ],
+      "gates": ["unit-tests", "build", "budget-check", "cost-allocation-check", "finops-review", "independent-audit"],
+      "parallelGroup": "wave-5",
+      "workflowNode": "review",
+      "budget": {
+        "maxTokens": 18000,
+        "maxCostUsd": 2,
+        "maxAttempts": 2
+      },
+      "execution": {
+        "agent": "codex",
+        "provider": "openai",
+        "model": "openai-frontier-model",
+        "modelFamily": "openai-reasoning",
+        "modelClass": "frontier",
+        "tier": "primary",
+        "isolation": "fresh-worktree",
+        "startedAt": null,
+        "finishedAt": null,
+        "fallbackUsed": false,
+        "evidence": []
+      }
+    }
+  ],
+  "workflow": {
+    "startNode": "research",
+    "nodes": {
+      "research": {
+        "kind": "research",
+        "taskRefs": ["inventory-filter-surfaces"],
+        "outcomes": ["completed", "blocked"]
+      },
+      "plan": {
+        "kind": "plan",
+        "taskRefs": ["define-filter-contract"],
+        "outcomes": ["completed", "blocked", "human_required"]
+      },
+      "plan-review": {
+        "kind": "review",
+        "taskRefs": ["audit-filter-contract"],
+        "outcomes": ["accepted", "changes_requested", "human_required"]
+      },
+      "implement": {
+        "kind": "implement",
+        "taskRefs": ["implement-filter-engine", "implement-filter-interface"],
+        "outcomes": ["completed", "blocked"]
+      },
+      "review": {
+        "kind": "review",
+        "taskRefs": ["audit-filter-change"],
+        "outcomes": ["accepted", "changes_requested", "human_required"]
+      },
+      "fix": {
+        "kind": "fix",
+        "taskRefs": ["implement-filter-engine", "implement-filter-interface"],
+        "outcomes": ["completed", "blocked"]
+      },
+      "human-gate": {
+        "kind": "human_gate",
+        "taskRefs": [],
+        "outcomes": ["approved", "rejected"]
+      },
+      "done": {
+        "kind": "terminal",
+        "taskRefs": [],
+        "outcomes": ["completed"]
+      }
+    },
+    "edges": [
+      { "from": "research", "to": "plan", "condition": "completed" },
+      { "from": "research", "to": "human-gate", "condition": "blocked" },
+      { "from": "plan", "to": "plan-review", "condition": "completed" },
+      { "from": "plan", "to": "human-gate", "condition": "blocked" },
+      { "from": "plan", "to": "human-gate", "condition": "human_required" },
+      { "from": "plan-review", "to": "implement", "condition": "accepted" },
+      { "from": "plan-review", "to": "plan", "condition": "changes_requested" },
+      { "from": "plan-review", "to": "human-gate", "condition": "human_required" },
+      { "from": "implement", "to": "review", "condition": "completed" },
+      { "from": "implement", "to": "human-gate", "condition": "blocked" },
+      { "from": "review", "to": "done", "condition": "accepted" },
+      { "from": "review", "to": "fix", "condition": "changes_requested" },
+      { "from": "review", "to": "human-gate", "condition": "human_required" },
+      { "from": "fix", "to": "review", "condition": "completed" },
+      { "from": "fix", "to": "human-gate", "condition": "blocked" },
+      { "from": "human-gate", "to": "fix", "condition": "approved" },
+      { "from": "human-gate", "to": "done", "condition": "rejected" }
+    ],
+    "limits": {
+      "maxCycles": 2,
+      "maxTransitions": 24
+    }
+  },
+  "sessionGraph": {
+    "latestSessionId": "session-plan-01",
+    "nodes": [
+      {
+        "id": "session-research-01",
+        "sprintId": "SP-2026-W32",
+        "agent": "claude",
+        "role": "researcher",
+        "status": "completed",
+        "taskRefs": ["inventory-filter-surfaces"],
+        "startedAt": "2026-08-03T13:00:00Z",
+        "endedAt": "2026-08-03T13:08:00Z",
+        "summary": "Se inventariaron las superficies del filtro y sus límites de escritura.",
+        "achievements": [
+          "Se identificaron tres superficies afectadas.",
+          "Se separaron los write scopes de interfaz y motor."
+        ],
+        "evidence": ["docs/execution/filter-inventory.md"]
+      },
+      {
+        "id": "session-plan-01",
+        "sprintId": "SP-2026-W32",
+        "agent": "codex",
+        "role": "architect",
+        "status": "active",
+        "taskRefs": ["define-filter-contract"],
+        "startedAt": "2026-08-03T13:10:00Z"
+      }
+    ],
+    "edges": [
+      {
+        "fromSession": "session-research-01",
+        "toSession": "session-plan-01",
+        "handoffRef": "handoff-research-to-plan"
+      }
+    ]
+  },
+  "handoffs": [
+    {
+      "id": "handoff-research-to-plan",
+      "sprintId": "SP-2026-W32",
+      "fromSession": "session-research-01",
+      "toSession": "session-plan-01",
+      "fromTask": "inventory-filter-surfaces",
+      "toTask": "define-filter-contract",
+      "status": "completed",
+      "summary": "La siguiente sesión puede diseñar el contrato usando un inventario validado y write scopes separados.",
+      "achievements": [
+        "Inventario de superficies aceptado.",
+        "Riesgo de compatibilidad persistida identificado."
+      ],
+      "outputs": ["docs/execution/filter-inventory.md"],
+      "facts": [
+        "El estado del filtro se concentra en el módulo de filtros.",
+        "La interfaz y el motor tienen superficies de escritura separables.",
+        "Existen pruebas de filtros que pueden ampliarse sin crear una suite nueva."
+      ],
+      "decisions": [],
+      "risks": [
+        {
+          "summary": "Cambiar la representación persistida rompería compatibilidad con estados existentes.",
+          "severity": "P1"
+        }
+      ],
+      "nextActions": [
+        "Definir entradas, salidas y compatibilidad del contrato.",
+        "Conservar sin cambios la representación persistida."
+      ],
+      "requiredInputs": [],
+      "evidence": ["docs/execution/filter-inventory.md"]
+    }
+  ]
+}

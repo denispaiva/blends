@@ -1,0 +1,780 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blends.local/schemas/role-matrix/1.8.0",
+  "title": "Blends Role Matrix",
+  "description": "Representación machine-readable de autoridad, bindings y gates por proyecto.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "project",
+    "roles",
+    "surfaces",
+    "bindings",
+    "architecture",
+    "gates",
+    "executionPolicy",
+    "planningPolicy",
+    "versioningPolicy",
+    "finopsPolicy",
+    "toolingPolicy",
+    "cloudFirstPolicy",
+    "mobileFirstPolicy",
+    "sessionTrackingPolicy",
+    "sprintPolicy",
+    "deliverableKpiPolicy",
+    "deliverableAuthorityPolicy"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": "1.8.0"
+    },
+    "project": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "roles": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/role"
+      }
+    },
+    "surfaces": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/surface"
+      }
+    },
+    "bindings": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/binding"
+      }
+    },
+    "architecture": {
+      "$ref": "#/$defs/architecture"
+    },
+    "gates": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/gate"
+      }
+    },
+    "executionPolicy": {
+      "$ref": "#/$defs/executionPolicy"
+    },
+    "planningPolicy": {
+      "$ref": "#/$defs/planningPolicy"
+    },
+    "versioningPolicy": {
+      "$ref": "#/$defs/versioningPolicy"
+    },
+    "finopsPolicy": {
+      "$ref": "#/$defs/finopsPolicy"
+    },
+    "toolingPolicy": {
+      "type": "object",
+      "required": ["inventoryRequired", "technologyVersionRequired", "skillSourceRequired", "mcpCapabilitiesRequired", "mcpAuthModeRequired", "secretsForbidden", "billingLinkRequiredWhenPaid", "reviewCadence"],
+      "properties": {
+        "inventoryRequired": { "const": true },
+        "technologyVersionRequired": { "const": true },
+        "skillSourceRequired": { "const": true },
+        "mcpCapabilitiesRequired": { "const": true },
+        "mcpAuthModeRequired": { "const": true },
+        "secretsForbidden": { "const": true },
+        "billingLinkRequiredWhenPaid": { "const": true },
+        "reviewCadence": { "enum": ["per-sprint", "per-release"] },
+        "usageAttributionRequired": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "cloudFirstPolicy": {
+      "$ref": "#/$defs/cloudFirstPolicy"
+    },
+    "mobileFirstPolicy": {
+      "$ref": "#/$defs/mobileFirstPolicy"
+    },
+    "sessionTrackingPolicy": {
+      "$ref": "#/$defs/sessionTrackingPolicy"
+    },
+    "sprintPolicy": {
+      "$ref": "#/$defs/sprintPolicy"
+    },
+    "deliverableKpiPolicy": {
+      "$ref": "#/$defs/deliverableKpiPolicy"
+    },
+    "deliverableAuthorityPolicy": {
+      "$ref": "#/$defs/deliverableAuthorityPolicy"
+    },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/policyException"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "role": {
+      "type": "object",
+      "required": ["kind", "description"],
+      "properties": {
+        "kind": {
+          "enum": ["human", "agent", "hybrid"]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "architecture": {
+      "type": "object",
+      "required": ["layers", "rulesFiles", "blastRadius"],
+      "properties": {
+        "layers": {
+          "type": "object",
+          "required": ["presentation", "business", "data", "ecosystem"],
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/architectureLayer"
+          }
+        },
+        "rulesFiles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "blastRadius": {
+          "$ref": "#/$defs/blastRadius"
+        }
+      },
+      "additionalProperties": false
+    },
+    "architectureLayer": {
+      "type": "object",
+      "required": ["paths", "allowedDependencies", "forbiddenDependencies"],
+      "properties": {
+        "paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "allowedDependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "forbiddenDependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "blastRadius": {
+      "type": "object",
+      "required": ["requireExplicitWriteScope", "allowRuleOverrides", "protectedPaths"],
+      "properties": {
+        "requireExplicitWriteScope": { "type": "boolean" },
+        "allowRuleOverrides": { "type": "boolean" },
+        "protectedPaths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "surface": {
+      "type": "object",
+      "required": ["criticality", "authority", "gates"],
+      "properties": {
+        "criticality": {
+          "$ref": "#/$defs/criticality"
+        },
+        "authority": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": ["decides", "executes", "proposes", "reviews", "audits"]
+            }
+          }
+        },
+        "gates": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "binding": {
+      "type": "object",
+      "required": ["primary", "fallback", "fallbackReviewThreshold"],
+      "properties": {
+        "primary": {
+          "$ref": "#/$defs/agentBinding"
+        },
+        "fallback": {
+          "oneOf": [
+            { "$ref": "#/$defs/agentBinding" },
+            { "type": "null" }
+          ]
+        },
+        "fallbackReviewThreshold": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "escalationOwner": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "agentBinding": {
+      "type": "object",
+      "required": ["agent", "provider", "modelFamily", "modelClass", "isolation"],
+      "properties": {
+        "agent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": ["string", "null"]
+        },
+        "modelFamily": {
+          "type": "string",
+          "minLength": 1
+        },
+        "modelClass": {
+          "enum": ["frontier", "balanced", "economy", "human"]
+        },
+        "isolation": {
+          "enum": ["normal", "fresh-session", "worktree", "fresh-worktree"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "gate": {
+      "type": "object",
+      "required": ["kind", "requiredFor", "blocksMerge"],
+      "properties": {
+        "kind": {
+          "enum": ["mechanical", "human", "agent"]
+        },
+        "requiredFor": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/criticality"
+          }
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ownerRole": {
+          "type": "string"
+        },
+        "blocksMerge": {
+          "type": "boolean"
+        },
+        "evidence": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "executionPolicy": {
+      "type": "object",
+      "required": [
+        "preferParallel",
+        "requireTaskDag",
+        "requireDisjointWriteScopes",
+        "defaultSubagentModelClass",
+        "escalateAfterEquivalentFailures"
+      ],
+      "properties": {
+        "preferParallel": {
+          "type": "boolean"
+        },
+        "requireTaskDag": {
+          "type": "boolean"
+        },
+        "requireDisjointWriteScopes": {
+          "type": "boolean"
+        },
+        "defaultSubagentModelClass": {
+          "enum": ["balanced", "economy"]
+        },
+        "escalateAfterEquivalentFailures": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "planningPolicy": {
+      "type": "object",
+      "required": [
+        "planRequiredForEveryTask",
+        "planningBeforeExecution",
+        "requiredSkillSource",
+        "requiredSkill",
+        "requiredAgents",
+        "planEvidenceRequired",
+        "compliancePercent",
+        "requirePhases",
+        "requireMeasurableDeliverables",
+        "requirePhaseExitCriteria",
+        "requireTaskPhase",
+        "maxParallelPhases"
+      ],
+      "properties": {
+        "planRequiredForEveryTask": { "const": true },
+        "planningBeforeExecution": { "const": true },
+        "requiredSkillSource": { "const": "obra/superpowers" },
+        "requiredSkill": { "const": "writing-plans" },
+        "requiredAgents": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "enum": ["claude", "codex"] },
+          "allOf": [
+            { "contains": { "const": "claude" } },
+            { "contains": { "const": "codex" } }
+          ]
+        },
+        "planEvidenceRequired": { "const": true },
+        "compliancePercent": { "const": 100 },
+        "requirePhases": { "const": true },
+        "requireMeasurableDeliverables": { "const": true },
+        "requirePhaseExitCriteria": { "const": true },
+        "requireTaskPhase": { "const": true },
+        "maxParallelPhases": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "versioningPolicy": {
+      "type": "object",
+      "required": [
+        "scheme",
+        "developmentStartsAt",
+        "stableStartsAt",
+        "tagPattern",
+        "changelogRequired",
+        "releaseChannels",
+        "bumpRules"
+      ],
+      "properties": {
+        "scheme": { "const": "semver" },
+        "developmentStartsAt": { "$ref": "#/$defs/semanticVersion" },
+        "stableStartsAt": { "$ref": "#/$defs/semanticVersion" },
+        "tagPattern": {
+          "type": "string",
+          "pattern": "\\{version\\}"
+        },
+        "changelogRequired": { "const": true },
+        "releaseChannels": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["alpha", "beta", "rc", "stable"] }
+        },
+        "bumpRules": {
+          "type": "object",
+          "required": ["major", "minor", "patch"],
+          "properties": {
+            "major": { "const": "breaking" },
+            "minor": { "const": "feature" },
+            "patch": { "const": "fix" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "semanticVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "finopsPolicy": {
+      "type": "object",
+      "required": [
+        "operatingModel",
+        "currency",
+        "budgetCadence",
+        "reportingCadence",
+        "allocationRequired",
+        "forecastRequired",
+        "unitEconomicsRequired",
+        "anomalyManagementRequired",
+        "costEvidenceAtPhaseExit",
+        "mandatoryAllocationKeys",
+        "billingLedgerRequired",
+        "separateFixedAndUsageBilling",
+        "actualsRequireInvoiceEvidence",
+        "requiredBillingProviders",
+        "subscriptionAllocationMethod",
+        "thresholds",
+        "overageAction",
+        "commitmentApproval"
+      ],
+      "properties": {
+        "operatingModel": { "const": "hybrid" },
+        "currency": { "const": "USD" },
+        "budgetCadence": { "const": "monthly" },
+        "reportingCadence": { "enum": ["daily", "weekly"] },
+        "allocationRequired": { "const": true },
+        "forecastRequired": { "const": true },
+        "unitEconomicsRequired": { "const": true },
+        "anomalyManagementRequired": { "const": true },
+        "costEvidenceAtPhaseExit": { "const": true },
+        "billingLedgerRequired": { "const": true },
+        "separateFixedAndUsageBilling": { "const": true },
+        "actualsRequireInvoiceEvidence": { "const": true },
+        "requiredBillingProviders": {
+          "type": "array",
+          "minItems": 4,
+          "uniqueItems": true,
+          "items": { "enum": ["firebase", "cloudflare", "anthropic", "openai"] }
+        },
+        "subscriptionAllocationMethod": { "const": "shared-monthly" },
+        "mandatoryAllocationKeys": {
+          "type": "array",
+          "minItems": 5,
+          "uniqueItems": true,
+          "items": { "enum": ["project", "environment", "owner", "cost-center", "version"] }
+        },
+        "thresholds": {
+          "type": "object",
+          "required": ["informationalPercent", "warningPercent", "criticalPercent", "anomalyPercent"],
+          "properties": {
+            "informationalPercent": { "type": "number", "minimum": 1, "maximum": 100 },
+            "warningPercent": { "type": "number", "minimum": 1, "maximum": 100 },
+            "criticalPercent": { "type": "number", "minimum": 1, "maximum": 100 },
+            "anomalyPercent": { "type": "number", "minimum": 1, "maximum": 100 }
+          },
+          "additionalProperties": false
+        },
+        "overageAction": { "const": "block-non-essential-work" },
+        "commitmentApproval": { "const": "human" }
+      },
+      "additionalProperties": false
+    },
+    "cloudFirstPolicy": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "managedServicesPreferred",
+        "serverlessPreferredForVariableDemand",
+        "costEstimateRequired",
+        "dataResidencyDecisionRequired",
+        "exitStrategyRequired",
+        "portabilityAssessmentRequired",
+        "idleResourceCleanupRequired",
+        "exceptionRequiresDecisionRecord"
+      ],
+      "properties": {
+        "enabled": { "const": true },
+        "managedServicesPreferred": { "const": true },
+        "serverlessPreferredForVariableDemand": { "const": true },
+        "costEstimateRequired": { "const": true },
+        "dataResidencyDecisionRequired": { "const": true },
+        "exitStrategyRequired": { "const": true },
+        "portabilityAssessmentRequired": { "const": true },
+        "idleResourceCleanupRequired": { "const": true },
+        "exceptionRequiresDecisionRecord": { "const": true }
+      },
+      "additionalProperties": false
+    },
+    "mobileFirstPolicy": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "baselineViewportWidthCssPx",
+        "touchTargets",
+        "wcagLevel",
+        "adaptiveLayoutsRequired",
+        "offlineBehaviorRequired",
+        "slowNetworkValidationRequired",
+        "orientationSupportRequired",
+        "mobileAcceptanceBeforeDesktopEnhancement"
+      ],
+      "properties": {
+        "enabled": { "const": true },
+        "baselineViewportWidthCssPx": { "type": "integer", "minimum": 240 },
+        "touchTargets": {
+          "type": "object",
+          "required": ["webCssPx", "iosPoints", "androidDp"],
+          "properties": {
+            "webCssPx": { "type": "integer", "minimum": 24 },
+            "iosPoints": { "type": "integer", "minimum": 44 },
+            "androidDp": { "type": "integer", "minimum": 48 }
+          },
+          "additionalProperties": false
+        },
+        "wcagLevel": { "const": "AA" },
+        "adaptiveLayoutsRequired": { "const": true },
+        "offlineBehaviorRequired": { "const": true },
+        "slowNetworkValidationRequired": { "const": true },
+        "orientationSupportRequired": { "const": true },
+        "mobileAcceptanceBeforeDesktopEnhancement": { "const": true }
+      },
+      "additionalProperties": false
+    },
+    "sessionTrackingPolicy": {
+      "type": "object",
+      "required": [
+        "handoffRequiredAtSessionEnd",
+        "sessionGraphRequired",
+        "previousSessionSummarySource",
+        "fullConversationTransfer",
+        "maxContextItems",
+        "requiredHandoffFields",
+        "requireEvidence",
+        "requireSprintLink",
+        "graphType",
+        "carryoverRequiresHandoff"
+      ],
+      "properties": {
+        "handoffRequiredAtSessionEnd": { "const": true },
+        "sessionGraphRequired": { "const": true },
+        "previousSessionSummarySource": { "const": "handoff-graph" },
+        "fullConversationTransfer": { "const": false },
+        "maxContextItems": { "type": "integer", "minimum": 1, "maximum": 30 },
+        "requiredHandoffFields": {
+          "type": "array",
+          "minItems": 6,
+          "uniqueItems": true,
+          "items": { "enum": ["summary", "achievements", "decisions", "risks", "next-actions", "evidence"] }
+        },
+        "requireEvidence": { "const": true },
+        "requireSprintLink": { "const": true },
+        "graphType": { "const": "directed-acyclic" },
+        "carryoverRequiresHandoff": { "const": true }
+      },
+      "additionalProperties": false
+    },
+    "sprintPolicy": {
+      "type": "object",
+      "required": [
+        "cadence",
+        "durationDays",
+        "calendarSystem",
+        "weekStartsOn",
+        "idPattern",
+        "roadmapTimelineUnit",
+        "taskAssignmentRequired",
+        "sessionAssignmentRequired",
+        "reviewRequired",
+        "retrospectiveRequired"
+      ],
+      "properties": {
+        "cadence": { "const": "biweekly" },
+        "durationDays": { "const": 14 },
+        "calendarSystem": { "const": "iso-week" },
+        "weekStartsOn": { "const": "monday" },
+        "idPattern": { "const": "SP-{isoYear}-W{startWeek}" },
+        "roadmapTimelineUnit": { "const": "sprint" },
+        "taskAssignmentRequired": { "const": true },
+        "sessionAssignmentRequired": { "const": true },
+        "reviewRequired": { "const": true },
+        "retrospectiveRequired": { "const": true }
+      },
+      "additionalProperties": false
+    },
+    "deliverableKpiPolicy": {
+      "type": "object",
+      "required": [
+        "primaryMetric",
+        "complexityTokenBudgets",
+        "scoreWeightsPercent",
+        "defectPenalties",
+        "scoreBands",
+        "qualityGuardrail",
+        "guardrailCapPercent",
+        "plannedRefactoringExcludedFromRework",
+        "acceptedDeliverableActualsRequired",
+        "evidenceRequired"
+      ],
+      "properties": {
+        "primaryMetric": { "const": "delivery_efficiency_percent" },
+        "complexityTokenBudgets": {
+          "type": "object",
+          "required": ["XS", "S", "M", "L", "XL"],
+          "properties": {
+            "XS": { "type": "integer", "minimum": 1 },
+            "S": { "type": "integer", "minimum": 1 },
+            "M": { "type": "integer", "minimum": 1 },
+            "L": { "type": "integer", "minimum": 1 },
+            "XL": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "scoreWeightsPercent": {
+          "type": "object",
+          "required": ["tokenEfficiency", "quality", "reworkEfficiency"],
+          "properties": {
+            "tokenEfficiency": { "type": "number", "minimum": 0, "maximum": 100 },
+            "quality": { "type": "number", "minimum": 0, "maximum": 100 },
+            "reworkEfficiency": { "type": "number", "minimum": 0, "maximum": 100 }
+          },
+          "additionalProperties": false
+        },
+        "defectPenalties": {
+          "type": "object",
+          "required": ["P0", "P1", "P2", "escaped"],
+          "properties": {
+            "P0": { "type": "number", "minimum": 0, "maximum": 100 },
+            "P1": { "type": "number", "minimum": 0, "maximum": 100 },
+            "P2": { "type": "number", "minimum": 0, "maximum": 100 },
+            "escaped": { "type": "number", "minimum": 0, "maximum": 100 }
+          },
+          "additionalProperties": false
+        },
+        "scoreBands": {
+          "type": "object",
+          "required": ["excellent", "healthy", "attention"],
+          "properties": {
+            "excellent": { "type": "number", "minimum": 1, "maximum": 100 },
+            "healthy": { "type": "number", "minimum": 1, "maximum": 100 },
+            "attention": { "type": "number", "minimum": 1, "maximum": 100 }
+          },
+          "additionalProperties": false
+        },
+        "qualityGuardrail": { "const": "no-p0-or-escaped-defects" },
+        "guardrailCapPercent": { "type": "number", "minimum": 0, "maximum": 59 },
+        "plannedRefactoringExcludedFromRework": { "const": true },
+        "acceptedDeliverableActualsRequired": { "const": true },
+        "evidenceRequired": { "const": true }
+      },
+      "additionalProperties": false
+    },
+    "deliverableAuthorityPolicy": {
+      "type": "object",
+      "required": [
+        "surfaceLinkRequired",
+        "acceptedRequiresApproval",
+        "approvalEvidenceRequired",
+        "approvalRequiresAuthorizedAction",
+        "raciMapping",
+        "canonicalTags"
+      ],
+      "properties": {
+        "surfaceLinkRequired": { "const": true },
+        "acceptedRequiresApproval": { "const": true },
+        "approvalEvidenceRequired": { "const": true },
+        "approvalRequiresAuthorizedAction": { "const": true },
+        "raciMapping": {
+          "type": "object",
+          "required": ["responsible", "accountable", "consulted", "informed"],
+          "properties": {
+            "responsible": { "const": "executes" },
+            "accountable": { "const": "decides" },
+            "consulted": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": { "enum": ["proposes", "reviews"] }
+            },
+            "informed": { "const": "explicit" }
+          },
+          "additionalProperties": false
+        },
+        "canonicalTags": {
+          "type": "array",
+          "minItems": 12,
+          "uniqueItems": true,
+          "items": { "enum": ["product-vision", "business-rule", "security", "data", "api", "ui", "mobile", "cloud", "infrastructure", "configuration", "research", "finops", "release"] }
+        }
+      },
+      "additionalProperties": false
+    },
+    "policyException": {
+      "type": "object",
+      "required": [
+        "invariant",
+        "reason",
+        "approvedBy",
+        "expiresAt",
+        "scope",
+        "compensationGates"
+      ],
+      "properties": {
+        "invariant": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approvedBy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date"
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "compensationGates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "criticality": {
+      "enum": ["P0", "P1", "P2"]
+    }
+  }
+}
