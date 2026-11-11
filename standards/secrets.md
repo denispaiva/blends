@@ -11,8 +11,10 @@ Preferir **identidad efímera** a **clave almacenada**. Un secreto que no existe
 | Caso | Mecanismo | Ejemplo vigente |
 | --- | --- | --- |
 | Operación local contra una API de Google | Impersonación de cuenta de servicio | una cuenta de servicio de operaciones (por ejemplo `<cuenta>@<proyecto-ops>`), sin archivo de clave: `gcloud auth print-access-token --impersonate-service-account=... --scopes=...` |
-| CI hacia GCP | Workload Identity Federation con OIDC | Pendiente al configurar el primer pipeline |
-| Runtime de aplicación | Secret Manager | Pendiente hasta el primer proyecto desplegado |
+| CI hacia GCP | Workload Identity Federation con OIDC | El workflow de deploy de Teyst: el proveedor acepta un solo repositorio y solo desde `main`, sin claves en los secrets de Actions |
+| Runtime que llama a una API de Google o a otro proyecto | Cuenta de servicio de la Function, sin clave; si cruza a otro proyecto, una cuenta dedicada que firma por IAM (`roles/iam.serviceAccountTokenCreator`) | El puente de identidad entre Teyst y Salmanazar |
+| Runtime que necesita una clave de un proveedor | Secret Manager, con las reglas de [Secret Manager en runtime](#secret-manager-en-runtime) | Ninguno vigente al 2026-11-11. Primer consumidor previsto: la clave de la Gemini Developer API para leer etiquetas |
+| Configuración que no es secreta | Archivo `.env.<proyecto>` versionado (Functions) o variables del repositorio (CI y SDK web) | IDs de cliente OAuth, IDs de proyecto, nombres de cuentas de servicio y la config pública del SDK de Firebase |
 | Automatización en Apps Script | Script Properties | `GCP_BIGQUERY_PROJECT`, `GCP_BILLING_TABLE`, `ALERT_EMAIL` |
 | Desarrollo local | `.env` ignorado + `.env.example` versionado | Convención declarada en el README de `vc` |
 | Secreto que teclea una persona | Gestor de contraseñas | Fuera del repositorio y de los chats |
@@ -21,6 +23,20 @@ Preferir **identidad efímera** a **clave almacenada**. Un secreto que no existe
 Cuando ninguna alternativa evita descargar una clave de cuenta de servicio, la excepción se documenta con ubicación fuera del repositorio, política de rotación y fecha de baja.
 
 **Excepción vigente — `GH_SCARCITY_PAT`.** No hay identidad efímera disponible: el `GITHUB_TOKEN` nativo de un workflow solo ve el repositorio que lo emite, y el monitor de escasez (`github-scarcity.md` (precursor, `vc/docs/standards/github-scarcity.md` en `51fbd2a1`)) necesita leer los Actions de toda la cuenta `denispaiva` para medir el cupo compartido. El token es fine-grained, alcanza todos los repos de la cuenta y declara el mínimo necesario: Metadata read, Actions read, Variables read/write. Rotación por expiración, nunca por extensión — se regenera y se reemplaza con `gh secret set GH_SCARCITY_PAT -R denispaiva/blends`; el deadline `gh-scarcity-pat-expira` en `vc/tooling/lifecycle/deadlines.json` avisa antes del vencimiento. Baja: si el monitor se retira, se borran el secret y el token.
+
+## Secret Manager en runtime
+
+Antes de crear un secreto, se descarta la identidad: si la API acepta la cuenta de servicio de la Function (Vertex AI, Firestore, otro proyecto por IAM), no hay secreto. Un secreto se justifica cuando el proveedor solo acepta una clave, y la decisión queda escrita en el plan que lo introduce, con la alternativa sin clave y por qué no se eligió.
+
+Reglas para cada secreto:
+
+1. **Vive en el proyecto que lo usa, uno por entorno.** El de desarrollo y el de producción son claves distintas, para poder rotar o revocar una sin tocar la otra. Nunca se comparte entre productos.
+2. **La Function lo declara con `defineSecret`** (Firebase Functions) o con la referencia equivalente del runtime. El valor no pasa por `.env`, el repositorio, el cliente, los logs ni los chats. Solo la cuenta de servicio de las Functions que lo leen tiene `roles/secretmanager.secretAccessor`, sobre ese secreto y no sobre el proyecto.
+3. **Una sola versión habilitada.** Al rotar se agrega la versión nueva, se despliega, se comprueba que funciona y después se **destruye** la anterior. Deshabilitarla no alcanza: Secret Manager cobra cada versión activa o deshabilitada, y solo deja de cobrar las destruidas. Destruir no tiene vuelta atrás, así que nunca se destruye la versión que usa un deploy vivo.
+4. **Costo.** La capa gratuita es de unas seis versiones activas por **cuenta de facturación**, compartidas entre todos sus proyectos; cada versión de más cuesta unos USD 0,06 por mes, más los accesos. Con una sola cuenta de facturación para los proyectos activos, todos los secretos del portfolio compiten por esas seis. De junio a octubre de 2026, todo el gasto de GCP del portfolio fue Secret Manager: versiones de más en proyectos que después se archivaron, algunas sin ninguna Function que las usara.
+5. **La clave se restringe en el proveedor:** a la API que usa y, cuando el proveedor lo permite, con tope de gasto. El tope del proveedor no reemplaza el presupuesto de la cuenta de facturación.
+6. **Inventario.** Cada secreto figura en el `.roadmap.json` de su proyecto con su propósito, su dueño, la fecha de la próxima rotación y el `billingItemId` del gasto que habilita. Un vencimiento se avisa con un deadline, como el de `GH_SCARCITY_PAT`.
+7. **Baja.** Cuando el consumidor se retira, se revoca la clave en el proveedor y se destruyen todas las versiones. Un proyecto que se archiva sin billing no paga sus versiones, pero conserva la credencial: se revoca igual si no se piensa reactivar.
 
 ## Compuerta y sombra
 
