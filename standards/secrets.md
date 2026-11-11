@@ -10,7 +10,7 @@ Preferir **identidad efímera** a **clave almacenada**. Un secreto que no existe
 
 | Caso | Mecanismo | Ejemplo vigente |
 | --- | --- | --- |
-| Operación local contra una API de Google | Impersonación de cuenta de servicio | `finops-sync@blends-ops` sin archivo de clave: `gcloud auth print-access-token --impersonate-service-account=... --scopes=...` |
+| Operación local contra una API de Google | Impersonación de cuenta de servicio | una cuenta de servicio de operaciones (por ejemplo `<cuenta>@<proyecto-ops>`), sin archivo de clave: `gcloud auth print-access-token --impersonate-service-account=... --scopes=...` |
 | CI hacia GCP | Workload Identity Federation con OIDC | Pendiente al configurar el primer pipeline |
 | Runtime de aplicación | Secret Manager | Pendiente hasta el primer proyecto desplegado |
 | Automatización en Apps Script | Script Properties | `GCP_BIGQUERY_PROJECT`, `GCP_BILLING_TABLE`, `ALERT_EMAIL` |
