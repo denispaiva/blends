@@ -3,7 +3,7 @@
 > Cómo ordena el Sprint Planner el trabajo de un sprint según la disponibilidad
 > declarada del Product Owner (PO), para que los agentes sigan avanzando cuando
 > esa disponibilidad baje.
-> Versión 0.1.0 (piloto): 2026-11-23.
+> Versión 0.2.0 (piloto): 2026-11-23.
 
 ## Alcance y procedencia
 
@@ -25,8 +25,12 @@ ninguna instancia. Esas piezas conservan su gobierno.
 
 ## Disponibilidad declarada
 
-El PO puede declarar su disponibilidad para cualquiera de los siete días de la
-semana y actualizarla cuando cambie. En el piloto se usa esta escala relativa:
+La disponibilidad se registra **día a día**: el nivel del día en curso, con lo
+que el PO declare ese mismo día, y se actualiza si cambia durante el día. Los
+días futuros figuran «sin informar» hasta que llegan y el PO declara su nivel.
+Es la regla del PO del 2026-11-23, que precisa la del pedido original: el PO
+puede hablar de cualquier día de la semana, pero un nivel se registra solo
+para el día en curso. En el piloto se usa esta escala relativa:
 
 | Nivel | Puntaje |
 |---|---|
@@ -40,12 +44,16 @@ semana y actualizarla cuando cambie. En el piloto se usa esta escala relativa:
   informar no se trata como Low ni como 0: queda sin programar para el PO, y la
   planning lo muestra como dato abierto. Un día sin disponibilidad es una
   declaración del PO.
-- **Declaraciones parciales.** Una frase como «hoy tengo más disponibilidad que
-  de martes a viernes» se registra como relación: el día nombrado es mayor que
-  el período. El Planner no le asigna puntajes, horarios ni un patrón semanal
-  recurrente que el PO no haya dicho.
-- **Vigencia.** Cada declaración vale para los días que nombra. La de una
-  semana no se arrastra a la siguiente.
+- **Día sin registrar.** Si el día en curso no tiene nivel, el Planner lo
+  pregunta antes de recomendar trabajo que dependa de él.
+- **Frases sobre días futuros.** Una frase como «hoy tengo más disponibilidad
+  que de martes a viernes» registra el nivel de hoy, si el PO lo da, y sirve
+  como relación para ordenar el trabajo: preparar más trabajo autónomo para
+  esos días. No se registra como nivel de los días futuros ni se extiende a
+  varios días, y el Planner no le asigna puntajes, horarios ni un patrón
+  semanal recurrente que el PO no haya dicho.
+- **Vigencia.** Un nivel vale para el día en que se declaró. No se arrastra al
+  día siguiente ni a la semana siguiente.
 
 El puntaje orienta la **secuencia** del trabajo. No mide esfuerzo. Los SP
 siguen midiendo el esfuerzo de referencia con la misma unidad para el PO, los
@@ -82,7 +90,8 @@ la decisión. Si no cambia nada, no pide precisión horaria.
    | Día o período | Disponibilidad declarada | Intervención del PO | Trabajo que queda habilitado | Dependencia pendiente |
    |---|---|---|---|---|
 
-   Un día sin informar figura como «sin informar», no se omite.
+   Un día sin informar figura como «sin informar», no se omite. Los días
+   futuros figuran así, con la relación que haya dicho el PO, si la hay.
 
 Una intervención que no está lista no se adelanta por haber ventana. El
 Planner propone el trabajo que la prepara para los días de menor
