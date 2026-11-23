@@ -36,6 +36,7 @@ Para trabajar: leer este documento y [AGENTS.md](AGENTS.md). Consultar después 
 
 | Estándar | De qué trata |
 |---|---|
+| [backlog-and-sprint-planning](standards/backlog-and-sprint-planning.md) | Vendimia, antes Orquestador del backlog: cómo el Sprint Planner ordena el sprint según la disponibilidad diaria del PO y la demanda de CI (piloto) |
 | [ci-cd](standards/ci-cd.md) | Cómo se verifica, se integra y se despliega el trabajo |
 | [conventions](standards/conventions.md) | Nombres, escritura, commits, ramas y entornos |
 | [idea-lifecycle](standards/idea-lifecycle.md) | Ciclo de vida de una idea hasta su graduación |
