@@ -1,4 +1,4 @@
-# Estándar: Orquestador del backlog
+# Estándar: Vendimia (`backlog-and-sprint-planning`)
 
 > Cómo ordena el Sprint Planner el trabajo de un sprint según la disponibilidad
 > declarada del Product Owner (PO), para que los agentes sigan avanzando cuando
@@ -7,8 +7,8 @@
 
 ## Alcance y procedencia
 
-La capacidad «Orquestador del backlog» (`backlog-and-sprint-planning`) la
-ejerce el rol Sprint Planner. Su ficha, que dice qué hace, dónde vive y quién
+La capacidad Vendimia (`backlog-and-sprint-planning`), antes llamada
+«Orquestador del backlog», la ejerce el rol Sprint Planner. Su ficha, que dice qué hace, dónde vive y quién
 decide, está en la [matriz de tooling de VCX](https://github.com/denispaiva/vcx/blob/main/docs/architecture/tooling-matrix.md#dónde-vive-cada-elemento),
 adoptada por el PO en VCX-D071. Este estándar no la repite. Agrega el método
 para un aspecto de la planning: la disponibilidad diaria del PO. La regla la
